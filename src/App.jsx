@@ -26,6 +26,17 @@ function App() {
     setAmount("");
   };
 
+  //State untuk menyimpan gambar
+  const [image, setImage] = useState(null);
+
+  //Handle Upload Gambar
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(URL.createObjectURL(file));
+    }
+  };
+
   //Fungsi Delete
   const deleteExpense = (id) => {
     const filtered = expenses.filter((item) => item.id !== id);
@@ -58,6 +69,22 @@ function App() {
       onChange={(e) => setAmount(e.target.value)}
       />
       </div>
+      <input
+      type="file"
+      accept="image/*"
+      onChange={handleImageUpload}
+      className="mb-3"
+      />
+      
+      {/* tampilkan preview gambar */}
+      {image && (
+        <img
+        src={image}
+        alt="preview"
+        className="mb-3 rounded-lg max-h-40 object-cover"
+        />
+      )}
+
 
       <button 
       onClick={addExpense}
