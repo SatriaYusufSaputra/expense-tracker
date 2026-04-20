@@ -11,30 +11,33 @@ function App() {
   }, [expenses]);
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
-  
-  const addExpense = () => {
-    if (!name || !amount) return;
-
-    const newExpense = {
-      id: Date.now(),
-      name,
-      amount
-    };
-
-    setExpenses([...expenses, newExpense]);
-    setName("");
-    setAmount("");
-  };
-
   //State untuk menyimpan gambar
   const [image, setImage] = useState(null);
+  const [date, setDate] = useState("");
+  const addExpense = () => {
+  if (!name || !amount || !date) return;
+
+  const newExpense = {
+    id: Date.now(),
+    name,
+    amount,
+    date,
+    image
+  };
+
+  setExpenses([...expenses, newExpense]);
+  setName("");
+  setAmount("");
+  setDate("");
+  setImage(null);
+};
 
   //Handle Upload Gambar
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImage(URL.createObjectURL(file));
-    }
+  const file = e.target.files[0];
+  if (file) {
+    setImage(URL.createObjectURL(file));
+  }
   };
 
   //Fungsi Delete
@@ -81,10 +84,16 @@ function App() {
         <img
         src={image}
         alt="preview"
-        className="mb-3 rounded-lg max-h-40 object-cover"
+        className="mb-3 rounded-lg max-h-40"
         />
       )}
 
+      <input
+        type="date"
+        className="border p-2 rounded w-full mb-2"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+      />
 
       <button 
       onClick={addExpense}
@@ -101,8 +110,14 @@ function App() {
           <div>
             <p>{item.name}</p> 
             <p className="text-sm text-gray-500">Rp {item.amount}</p>
+            <p className="text-sm text-gray-500">{item.date}</p>
           </div>
-          
+          {item.image && (
+            <img
+              src={item.image}
+              className="mt-2 max-h-32 rounded"
+            />
+          )}
           <button
             onClick={() => deleteExpense(item.id)}
             className="text-red-500 hover:text-red-700"
