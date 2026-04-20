@@ -14,6 +14,9 @@ function App() {
   //State untuk menyimpan gambar
   const [image, setImage] = useState(null);
   const [date, setDate] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   const addExpense = () => {
   if (!name || !amount || !date) return;
 
@@ -48,7 +51,19 @@ function App() {
 
   //Hitung Total Uang
   const total = expenses.reduce((acc, item) => acc + Number(item.amount), 0);
+  
+  //Logic Filter
+  const filteredExpenses = expenses.filter((item) => {
+  if (!startDate || !endDate) return true;
 
+  return item.date >= startDate && item.date <= endDate;
+  });
+
+  //Total berdasarkan Filter
+  const filteredTotal = filteredExpenses.reduce(
+  (acc, item) => acc + Number(item.amount),
+  0
+  );
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-6 rounded-2xl shadow-md w-full max-w-md">
@@ -102,30 +117,70 @@ function App() {
       Tambah</button>
       <h2 className="mt-6 font-semibold ">Total Pengeluaran: Rp {total}</h2>
       <p className="text-sm text-gray-500">Daftar Pengeluaran:</p>
-      <ul className="mt-2 space-y-2">
-        {expenses.map((item) => (
-        <li key={item.id}
-        className="flex justify-between items-center bg-gray-50 p-2 rounded"
-        >
-          <div>
-            <p>{item.name}</p> 
-            <p className="text-sm text-gray-500">Rp {item.amount}</p>
-            <p className="text-sm text-gray-500">{item.date}</p>
-          </div>
-          {item.image && (
-            <img
-              src={item.image}
-              className="mt-2 max-h-32 rounded"
-            />
-          )}
-          <button
-            onClick={() => deleteExpense(item.id)}
-            className="text-red-500 hover:text-red-700"
-          >
-          Hapus</button>
-        </li>
-      ))}
-      </ul>
+      <div className="mt-4 overflow-x-auto">
+        <div className="mt-4 flex gap-2">
+          <input
+            type="date"
+            className="border p-2 rounded w-full"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+
+          <input
+            type="date"
+            className="border p-2 rounded w-full"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </div>
+
+        {/* Tampilkan total hasil filter */}
+        <h2 className="mt-4 font-semibold">
+          Total (Filter): Rp {filteredTotal}
+        </h2>
+
+        <table className="w-full border border-gray-200 text-sm">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-2 border">Tanggal</th>
+              <th className="p-2 border">Nama</th>
+              <th className="p-2 border">Jumlah</th>
+              <th className="p-2 border">Struk</th>
+              <th className="p-2 border">Aksi</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredExpenses.map((item) => (
+              <tr key={item.id} className="text-center">
+                <td className="p-2 border">{new Date(item.date).toLocaleDateString("id-ID")}</td>
+                <td className="p-2 border">{item.name}</td>
+                <td className="p-2 border">Rp {item.amount}</td>
+
+                <td className="p-2 border">
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      className="h-12 mx-auto rounded"
+                    />
+                  ) : (
+                    "-"
+                  )}
+                </td>
+
+                <td className="p-2 border">
+                  <button
+                    onClick={() => deleteExpense(item.id)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    Hapus
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
     </div>
   );
