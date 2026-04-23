@@ -5,6 +5,7 @@ import StatCards from "./components/StatCards";
 import CategoryBreakdown from "./components/CategoryBreakdown";
 import ExpenseTable from "./components/ExpenseTable";
 import ExpenseForm from "./components/ExpenseForm";
+import Charts from "./components/Charts";
 
 export default function App() {
   const [expenses, setExpenses] = useState(() => {
@@ -105,9 +106,17 @@ export default function App() {
     .filter((c) => c.count > 0)
     .sort((a, b) => b.total - a.total);
 
+  const [chartMonth, setChartMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  });
+
+  // Filter sebelum dikirim ke Charts
+  const chartExpenses = expenses.filter((e) => e.date.startsWith(chartMonth));
+
   return (
-    <div className="min-h-screen bg-gray-100 px-4 py-8">
-      <div className="max-w-3xl mx-auto flex flex-col gap-5">
+    <div className="min-h-screen bg-gray-100 px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto flex flex-col gap-5 lg:gap-8">
         {/* Header */}
         <Header onAdd={() => setAdding(!adding)} />
 
@@ -118,6 +127,13 @@ export default function App() {
           filteredTotal={filteredTotal}
           filteredCount={filteredExpenses.length}
           avg={avgExpense}
+        />
+
+        {/* Charts */}
+        <Charts
+          expenses={chartExpenses}
+          month={chartMonth}
+          onMonthChange={setChartMonth}
         />
 
         {/* Category Breakdown */}
@@ -144,7 +160,6 @@ export default function App() {
             }}
           />
         )}
-
         {/* Table */}
         <ExpenseTable
           filteredExpenses={filteredExpenses}
