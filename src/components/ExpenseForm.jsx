@@ -29,10 +29,8 @@ export default function ExpenseForm({
           {editingId ? "Edit Pengeluaran" : "Tambah Pengeluaran"}
         </h2>
         <button
-          onClick={() => {
-            onSubmit(false);
-            onCancel(null);
-          }}
+          onClick={onCancel}
+          className="text-sm text-gray-500 hover:text-gray-900"
         >
           Batal
         </button>
