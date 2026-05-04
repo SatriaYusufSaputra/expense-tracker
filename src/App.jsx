@@ -1,21 +1,26 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CATEGORIES } from "./constants/categories";
 import Header from "./components/Header";
+import AuthForm from "./components/AuthForm";
 import StatCards from "./components/StatCards";
 import CategoryBreakdown from "./components/CategoryBreakdown";
 import ExpenseTable from "./components/ExpenseTable";
 import ExpenseForm from "./components/ExpenseForm";
 import Charts from "./components/Charts";
+import {
+  fetchExpenses,
+  insertExpense,
+  updateExpense,
+  deleteExpenseById,
+} from "./utils/expenseService";
+
+const mapExpense = (expense) => ({
+  ...expense,
+  id: expense._id || expense.id,
+});
 
 export default function App() {
-  const [expenses, setExpenses] = useState(() => {
-    try {
-      const saved = localStorage.getItem("expenses");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [expenses, setExpenses] = useState([]);
 
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
@@ -26,32 +31,64 @@ export default function App() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [filterCat, setFilterCat] = useState("semua"); // filter kategori di tabel
-
   const [adding, setAdding] = useState(false);
+  const [chartMonth, setChartMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  });
+  const [user, setUser] = useState(() =>
+    localStorage.getItem("token")
+      ? localStorage.getItem("userName") || "user"
+      : null,
+  );
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userName");
+    setUser(null);
+    setExpenses([]);
+  };
 
   useEffect(() => {
-    localStorage.setItem("expenses", JSON.stringify(expenses));
-  }, [expenses]);
+    if (!user) return;
 
-  const addExpense = () => {
+    const loadExpenses = async () => {
+      try {
+        const data = await fetchExpenses();
+        setExpenses(data.map(mapExpense));
+      } catch (err) {
+        console.error(err);
+        handleLogout();
+      }
+    };
+
+    loadExpenses();
+  }, [user]);
+
+  if (!user) return <AuthForm onLogin={(name) => setUser(name)} />;
+
+  const addExpense = async () => {
     if (!name || !amount || !date) return;
 
+    const expensePayload = {
+      name,
+      amount: Number(amount),
+      date,
+      category,
+      image,
+    };
+
     if (editingId) {
-      // Mode edit: update data yang ada
-      setExpenses(
-        expenses.map((item) =>
-          item.id === editingId
-            ? { ...item, name, amount: Number(amount), date, category, image }
-            : item,
+      const updated = await updateExpense(editingId, expensePayload);
+      setExpenses((prev) =>
+        prev.map((item) =>
+          item.id === editingId ? mapExpense(updated) : item,
         ),
       );
       setEditingId(null);
     } else {
-      // Mode tambah: seperti sebelumnya
-      setExpenses([
-        { id: Date.now(), name, amount: Number(amount), date, image, category },
-        ...expenses,
-      ]);
+      const created = await insertExpense(expensePayload);
+      setExpenses((prev) => [mapExpense(created), ...prev]);
     }
 
     setName("");
@@ -72,8 +109,10 @@ export default function App() {
     setAdding(true); // buka form
   };
 
-  const deleteExpense = (id) =>
-    setExpenses(expenses.filter((item) => item.id !== id));
+  const deleteExpense = async (id) => {
+    await deleteExpenseById(id);
+    setExpenses((prev) => prev.filter((item) => item.id !== id));
+  };
 
   const total = expenses.reduce((acc, item) => acc + Number(item.amount), 0);
 
@@ -106,11 +145,6 @@ export default function App() {
     .filter((c) => c.count > 0)
     .sort((a, b) => b.total - a.total);
 
-  const [chartMonth, setChartMonth] = useState(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  });
-
   // Filter sebelum dikirim ke Charts
   const chartExpenses = expenses.filter((e) => e.date.startsWith(chartMonth));
 
@@ -118,7 +152,11 @@ export default function App() {
     <div className="min-h-screen bg-gray-100 px-4 sm:px-6 lg:px-8 py-8">
       <div className="max-w-7xl mx-auto flex flex-col gap-5 lg:gap-8">
         {/* Header */}
-        <Header onAdd={() => setAdding(!adding)} />
+        <Header
+          onAdd={() => setAdding(!adding)}
+          onLogout={handleLogout}
+          userName={user}
+        />
 
         {/* Stat Cards */}
         <StatCards

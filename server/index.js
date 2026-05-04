@@ -4,7 +4,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { connectDB } from "./db/connection.js";
 import expenseRoutes from "./routes/expenses.js";
+import authRoutes from "./routes/auth.js";
+import { protect } from "./middleware/auth.js";
 
+app.use("/api/auth", authRoutes);
+app.use("/api/expenses", protect, expenseRoutes); // 👈 protect dipasang di sini
 
 dotenv.config();
 
