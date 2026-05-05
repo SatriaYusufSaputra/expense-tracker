@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:3000/api/expenses";
+const BASE_URL = "https://expense-tracker-production-b25e.up.railway.app/api/expenses";
 
 const getHeaders = () => ({
   "Content-Type": "application/json",
