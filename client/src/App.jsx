@@ -151,6 +151,7 @@ export default function App() {
           onLogout={handleLogout}
           userName={user}
         />
+
         <StatCards
           total={total}
           expenseCount={expenses.length}
@@ -158,32 +159,31 @@ export default function App() {
           filteredCount={filteredExpenses.length}
           avg={avgExpense}
         />
-        <CategoryBreakdown breakdown={categoryBreakdown} total={total} />
+
         {adding && (
-          <ExpenseForm
-            name={name}
-            setName={setName}
-            amount={amount}
-            setAmount={setAmount}
-            date={date}
-            setDate={setDate}
-            category={category}
-            setCategory={setCategory}
-            image={image}
-            setImage={setImage}
-            editingId={editingId}
-            onSubmit={addExpense}
-            onCancel={() => {
-              setAdding(false);
-              setEditingId(null);
-            }}
-          />
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-5 relative animate-fadeIn">
+              <ExpenseForm
+                name={name}
+                setName={setName}
+                amount={amount}
+                setAmount={setAmount}
+                date={date}
+                setDate={setDate}
+                category={category}
+                setCategory={setCategory}
+                image={image}
+                setImage={setImage}
+                editingId={editingId}
+                onSubmit={addExpense}
+                onCancel={() => {
+                  setAdding(false);
+                  setEditingId(null);
+                }}
+              />
+            </div>
+          </div>
         )}
-        <Charts
-          expenses={chartExpenses}
-          month={chartMonth}
-          onMonthChange={setChartMonth}
-        />
 
         <ExpenseTable
           filteredExpenses={filteredExpenses}
@@ -196,6 +196,14 @@ export default function App() {
           setFilterCat={setFilterCat}
           onEdit={startEdit}
           onDelete={deleteExpense}
+        />
+        
+        <CategoryBreakdown breakdown={categoryBreakdown} total={total} />
+
+        <Charts
+          expenses={chartExpenses}
+          month={chartMonth}
+          onMonthChange={setChartMonth}
         />
       </div>
     </div>
