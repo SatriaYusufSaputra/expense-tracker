@@ -1,0 +1,12 @@
+[33mfa132c4[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m mengubah struktur folder
+[33mbec1c65[m Autentikasi JWT + MongoDB
+[33ma24f5fd[m implement expense management features with CRUD operations and database connection
+[33m4c69235[m menambahkan chart
+[33mbf42705[m memisah file dan menambah edit pengeluaran
+[33m061f8d6[m menambah kategori
+[33ma2a2dcd[m fitur filter
+[33m7180b07[m Expense Tracker versi Excel
+[33m52dcafa[m Merge branch 'main' of https://github.com/SatriaYusufSaputra/expense-tracker
+[33m31541f3[m Upload Foto Struk (Preview dulu)
+[33mc99b86f[m Revise README for Expense Tracker project
+[33mc532a7c[m first commit: expenses tracker basic

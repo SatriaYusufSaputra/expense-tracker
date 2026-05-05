@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -7,17 +6,15 @@ import expenseRoutes from "./routes/expenses.js";
 import authRoutes from "./routes/auth.js";
 import { protect } from "./middleware/auth.js";
 
-app.use("/api/auth", authRoutes);
-app.use("/api/expenses", protect, expenseRoutes); // 👈 protect dipasang di sini
-
 dotenv.config();
 
-const app = express();
+const app = express(); // ✅ app harus didefinisikan DULU sebelum app.use()
 
-app.use(cors({ origin: "http://localhost:5173" })); // URL React kamu
+app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
-app.use("/api/expenses", expenseRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/expenses", protect, expenseRoutes);
 
 connectDB().then(() => {
   app.listen(process.env.PORT, () => {
