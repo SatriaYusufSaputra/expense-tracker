@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { CATEGORIES } from "./constants/categories";
 import Header from "./components/Header";
-import AuthForm from "./components/AuthForm";
+import AuthForm from "./components/AuthForm"; // ✅ cukup sekali
 import StatCards from "./components/StatCards";
 import CategoryBreakdown from "./components/CategoryBreakdown";
 import ExpenseTable from "./components/ExpenseTable";
@@ -21,7 +21,6 @@ const mapExpense = (expense) => ({
 
 export default function App() {
   const [expenses, setExpenses] = useState([]);
-
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [image, setImage] = useState(null);
@@ -30,12 +29,14 @@ export default function App() {
   const [editingId, setEditingId] = useState(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [filterCat, setFilterCat] = useState("semua"); // filter kategori di tabel
+  const [filterCat, setFilterCat] = useState("semua");
   const [adding, setAdding] = useState(false);
   const [chartMonth, setChartMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   });
+
+  // ✅ Deklarasi user & handleLogout cukup sekali, di sini
   const [user, setUser] = useState(() =>
     localStorage.getItem("token")
       ? localStorage.getItem("userName") || "user"
@@ -51,7 +52,6 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return;
-
     const loadExpenses = async () => {
       try {
         const data = await fetchExpenses();
@@ -61,7 +61,6 @@ export default function App() {
         handleLogout();
       }
     };
-
     loadExpenses();
   }, [user]);
 
@@ -69,7 +68,6 @@ export default function App() {
 
   const addExpense = async () => {
     if (!name || !amount || !date) return;
-
     const expensePayload = {
       name,
       amount: Number(amount),
@@ -106,7 +104,7 @@ export default function App() {
     setDate(item.date);
     setCategory(item.category);
     setImage(item.image);
-    setAdding(true); // buka form
+    setAdding(true);
   };
 
   const deleteExpense = async (id) => {
@@ -116,7 +114,6 @@ export default function App() {
 
   const total = expenses.reduce((acc, item) => acc + Number(item.amount), 0);
 
-  // Filter: tanggal + kategori
   const filteredExpenses = expenses.filter((item) => {
     const inRange =
       !startDate || !endDate
@@ -134,7 +131,6 @@ export default function App() {
     ? filteredTotal / filteredExpenses.length
     : 0;
 
-  // Ringkasan per kategori (dari semua data, bukan filter)
   const categoryBreakdown = CATEGORIES.map((cat) => ({
     ...cat,
     total: expenses
@@ -145,20 +141,16 @@ export default function App() {
     .filter((c) => c.count > 0)
     .sort((a, b) => b.total - a.total);
 
-  // Filter sebelum dikirim ke Charts
   const chartExpenses = expenses.filter((e) => e.date.startsWith(chartMonth));
 
   return (
     <div className="min-h-screen bg-gray-100 px-4 sm:px-6 lg:px-8 py-8">
       <div className="max-w-7xl mx-auto flex flex-col gap-5 lg:gap-8">
-        {/* Header */}
         <Header
           onAdd={() => setAdding(!adding)}
           onLogout={handleLogout}
           userName={user}
         />
-
-        {/* Stat Cards */}
         <StatCards
           total={total}
           expenseCount={expenses.length}
@@ -166,18 +158,7 @@ export default function App() {
           filteredCount={filteredExpenses.length}
           avg={avgExpense}
         />
-
-        {/* Charts */}
-        <Charts
-          expenses={chartExpenses}
-          month={chartMonth}
-          onMonthChange={setChartMonth}
-        />
-
-        {/* Category Breakdown */}
         <CategoryBreakdown breakdown={categoryBreakdown} total={total} />
-
-        {/* Add Form */}
         {adding && (
           <ExpenseForm
             name={name}
@@ -198,7 +179,12 @@ export default function App() {
             }}
           />
         )}
-        {/* Table */}
+        <Charts
+          expenses={chartExpenses}
+          month={chartMonth}
+          onMonthChange={setChartMonth}
+        />
+
         <ExpenseTable
           filteredExpenses={filteredExpenses}
           filteredTotal={filteredTotal}
