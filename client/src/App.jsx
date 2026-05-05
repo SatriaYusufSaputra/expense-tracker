@@ -27,8 +27,13 @@ export default function App() {
   const [date, setDate] = useState("");
   const [category, setCategory] = useState("makanan");
   const [editingId, setEditingId] = useState(null);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+const getToday = () => {
+  const today = new Date();
+  return today.toISOString().split("T")[0]; // format YYYY-MM-DD
+};
+
+const [startDate, setStartDate] = useState(getToday());
+const [endDate, setEndDate] = useState(getToday());
   const [filterCat, setFilterCat] = useState("semua");
   const [adding, setAdding] = useState(false);
   const [chartMonth, setChartMonth] = useState(() => {
@@ -197,7 +202,7 @@ export default function App() {
           onEdit={startEdit}
           onDelete={deleteExpense}
         />
-        
+
         <CategoryBreakdown breakdown={categoryBreakdown} total={total} />
 
         <Charts
