@@ -10,14 +10,12 @@ dotenv.config();
 
 const app = express(); // ✅ app harus didefinisikan DULU sebelum app.use()
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://expense-tracker-kohl-phi-25.vercel.app",
-    ],
-  }),
-);
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://expense-tracker-kohl-phi-25.vercel.app",
+  ]
+}));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
