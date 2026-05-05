@@ -14,7 +14,11 @@ import { groupByDate, groupByCategory } from "../utils/chartData";
 import { CATEGORIES } from "../constants/categories";
 import { formatRupiah } from "../utils/format";
 
-export default function Charts({ expenses }) {
+export default function Charts({ expenses}) {
+  // Sembunyikan seluruh komponen kalau tidak ada data
+  if (!expenses || expenses.length === 0) {
+    return null; // tidak render apapun
+  }
   const barData = groupByDate(expenses);
   const categoryData = groupByCategory(expenses);
   const COLORS = ["#4ADE80", "#FBBF24", "#60A5FA", "#F87171", "#A78BFA"];
