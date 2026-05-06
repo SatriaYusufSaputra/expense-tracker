@@ -1,4 +1,6 @@
+import { useState } from "react"; // ✅ tambah import
 import { CATEGORIES } from "../constants/categories";
+import { uploadImage } from "../utils/uploadService";
 
 export default function ExpenseForm({
   name,
@@ -15,10 +17,23 @@ export default function ExpenseForm({
   onSubmit,
   onCancel,
 }) {
-  const handleImageUpload = (e) => {
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) setImage(URL.createObjectURL(file));
+    if (!file) return;
+    setImage(URL.createObjectURL(file));
+    setUploading(true);
+    try {
+      const url = await uploadImage(file);
+      setImage(url);
+    } catch {
+      alert("Gagal upload gambar");
+    } finally {
+      setUploading(false);
+    }
   };
+
   const inputClass =
     "w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:border-green-600 focus:bg-white transition placeholder-gray-300";
 
@@ -35,6 +50,7 @@ export default function ExpenseForm({
           Batal
         </button>
       </div>
+
       <div className="p-5 flex flex-col gap-4">
         {/* Nama + Jumlah */}
         <div className="grid grid-cols-2 gap-3">
@@ -64,7 +80,7 @@ export default function ExpenseForm({
           </div>
         </div>
 
-        {/* Kategori Picker */}
+        {/* Kategori */}
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
             Kategori
@@ -75,11 +91,11 @@ export default function ExpenseForm({
                 key={cat.id}
                 onClick={() => setCategory(cat.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition
-                        ${
-                          category === cat.id
-                            ? `${cat.bg} ${cat.text} border-transparent ring-2 ring-offset-1 ring-green-600`
-                            : "bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100"
-                        }`}
+                  ${
+                    category === cat.id
+                      ? `${cat.bg} ${cat.text} border-transparent ring-2 ring-offset-1 ring-green-600`
+                      : "bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100"
+                  }`}
               >
                 <span>{cat.emoji}</span>
                 {cat.label}
@@ -113,7 +129,9 @@ export default function ExpenseForm({
               className="hidden"
               onChange={handleImageUpload}
             />
-            {image ? (
+            {uploading ? (
+              <p className="text-xs text-gray-400">Mengupload...</p>
+            ) : image ? (
               <img
                 src={image}
                 alt="preview"
@@ -141,12 +159,17 @@ export default function ExpenseForm({
           </label>
         </div>
 
+        {/* ✅ Hanya satu tombol simpan */}
         <button
           onClick={onSubmit}
-          disabled={!name || !amount || !date}
+          disabled={!name || !amount || !date || uploading}
           className="w-full bg-green-800 hover:bg-green-900 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-semibold text-sm py-3 rounded-xl transition"
         >
-          Simpan Pengeluaran
+          {uploading
+            ? "Mengupload gambar..."
+            : editingId
+              ? "Simpan Perubahan"
+              : "Simpan Pengeluaran"}
         </button>
       </div>
     </div>

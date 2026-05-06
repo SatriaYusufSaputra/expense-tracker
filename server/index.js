@@ -5,6 +5,7 @@ import { connectDB } from "./db/connection.js";
 import expenseRoutes from "./routes/expenses.js";
 import authRoutes from "./routes/auth.js";
 import { protect } from "./middleware/auth.js";
+import uploadRoute from "./routes/upload.js";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/expenses", protect, expenseRoutes);
+app.use("/api/upload", uploadRoute);
 
 connectDB().then(() => {
   app.listen(process.env.PORT, () => {
