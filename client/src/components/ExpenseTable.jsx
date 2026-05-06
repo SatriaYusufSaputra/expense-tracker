@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { CATEGORIES, getCat } from "../constants/categories";
 import { formatRupiah } from "../utils/format";
+
 
 export default function ExpenseTable({
   filteredExpenses,
@@ -13,6 +15,7 @@ export default function ExpenseTable({
   onEdit,
   onDelete,
 }) {
+  const [preview, setPreview] = useState(null);
   return (
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
       {/* Table Header: filter tanggal */}
@@ -143,11 +146,12 @@ export default function ExpenseTable({
                         {item.image ? (
                           <img
                             src={item.image}
-                            alt="struk"
-                            className="w-11 h-9 object-cover rounded-lg border border-gray-100"
+                            onClick={() => setPreview(item.image)}
+                            className="w-11 h-9 object-cover rounded-lg cursor-pointer hover:scale-105 transition"
+                            title="Klik untuk lihat"
                           />
                         ) : (
-                          <span className="text-gray-200 text-sm">—</span>
+                          <span className="text-gray-200">—</span>
                         )}
                       </td>
                       <td className="px-5 py-3.5 flex items-center gap-2">
@@ -169,6 +173,22 @@ export default function ExpenseTable({
                 })}
               </tbody>
             </table>
+            {preview && (
+              <div
+                className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+                onClick={() => setPreview(null)}
+              >
+                <div
+                  className="max-w-md w-full p-4"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={preview}
+                    className="w-full max-h-[80vh] object-contain rounded-xl shadow-xl"
+                  />
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex items-center justify-between px-5 py-3 bg-gray-50 border-t border-gray-100">
             <span className="text-xs text-gray-400">
