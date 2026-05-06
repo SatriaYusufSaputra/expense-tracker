@@ -126,6 +126,7 @@ export default function ExpenseForm({
             <input
               type="file"
               accept="image/*"
+              capture="environment"
               className="hidden"
               onChange={handleImageUpload}
             />
