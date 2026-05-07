@@ -1,4 +1,9 @@
-export default function Header({ onAdd, onLogout, userName }) {
+import { useState } from "react";
+import ProfileModal from "./ProfileModal";
+
+
+export default function Header({ onAdd, onLogout, userName, onUpdateName }) {
+const [showProfile, setShowProfile] = useState(false);
   return (
     <div className="flex items-center justify-between gap-3 flex-wrap">
       <div className="flex items-center gap-3">
@@ -23,33 +28,49 @@ export default function Header({ onAdd, onLogout, userName }) {
           )}
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        <button
-          onClick={onAdd}
-          className="flex items-center gap-1.5 bg-green-800 hover:bg-green-900 text-white text-sm font-semibold px-4 py-2 rounded-xl transition"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            viewBox="0 0 24 24"
+      {/* Actions */}
+        <div className="flex items-center gap-2">
+          {/* Tombol profil */}
+          <button
+            onClick={() => setShowProfile(true)}
+            className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-800 hover:bg-gray-100 px-3 py-2 rounded-xl transition"
           >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          Tambah
-        </button>
-        {onLogout && (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+            <span className="hidden sm:inline">{userName}</span>
+          </button>
+
+          {/* Tombol logout */}
           <button
             onClick={onLogout}
-            className="text-sm font-semibold text-gray-600 hover:text-red-600 hover:bg-gray-100 px-4 py-2 rounded-xl transition"
+            className="text-xs font-semibold text-gray-400 hover:text-red-500 hover:bg-red-50 px-3 py-2 rounded-xl transition"
           >
-            Logout
+            Keluar
           </button>
-        )}
-      </div>
+
+          {/* Tombol tambah */}
+          <button
+            onClick={onAdd}
+            className="flex items-center gap-1.5 bg-green-800 hover:bg-green-900 text-white text-sm font-semibold px-4 py-2 rounded-xl transition"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Tambah
+          </button>
+        </div>
+
+      {/* Modal profil */}
+      {showProfile && (
+        <ProfileModal
+          onClose={() => setShowProfile(false)}
+          onUpdateName={(newName) => {
+            onUpdateName(newName);
+            setShowProfile(false);
+          }}
+        />
+      )}
     </div>
   );
 }

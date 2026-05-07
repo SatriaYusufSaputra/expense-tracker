@@ -155,6 +155,7 @@ const [endDate, setEndDate] = useState(getToday());
           onAdd={() => setAdding(!adding)}
           onLogout={handleLogout}
           userName={user}
+          onUpdateName={(newName) => setUser(newName)} // ✅ tambah ini
         />
 
         <StatCards

@@ -1,4 +1,4 @@
-const BASE_URL = "https://expense-tracker-production-b25e.up.railway.app/api/expenses";
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api/expenses`;
 
 const getHeaders = () => ({
   "Content-Type": "application/json",
