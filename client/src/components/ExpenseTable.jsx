@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { CATEGORIES, getCat } from "../constants/categories";
 import { formatRupiah } from "../utils/format";
+import ExportButton from "./ExportButton";
 
 
 export default function ExpenseTable({
@@ -23,6 +24,8 @@ export default function ExpenseTable({
         <h2 className="text-sm font-semibold text-gray-700">
           Riwayat Pengeluaran
         </h2>
+        <ExportButton expenses={filteredExpenses} />{" "}
+        {/* export data yang sudah difilter */}
         <div className="flex items-center gap-2">
           <input
             type="date"
