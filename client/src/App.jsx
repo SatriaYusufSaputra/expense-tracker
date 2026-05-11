@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { CATEGORIES } from "./constants/categories";
-import Header from "./components/Header";
+import Sidebar from "./components/Sidebar";
+import BottomNav from "./components/BottomNav";
+import MobileHeader from "./components/MobileHeade";
 import AuthForm from "./components/AuthForm"; // ✅ cukup sekali
 import StatCards from "./components/StatCards";
 import CategoryBreakdown from "./components/CategoryBreakdown";
 import ExpenseTable from "./components/ExpenseTable";
 import ExpenseForm from "./components/ExpenseForm";
 import Charts from "./components/Charts";
+import ProfileModal from "./components/ProfileModal";
 import Footer from "./components/Footer";
 import {
   fetchExpenses,
@@ -20,6 +23,10 @@ const mapExpense = (expense) => ({
   id: expense._id || expense.id,
 });
 
+const getToday = () => {
+  return new Date().toISOString().split("T")[0];
+};
+
 export default function App() {
   const [expenses, setExpenses] = useState([]);
   const [name, setName] = useState("");
@@ -28,19 +35,16 @@ export default function App() {
   const [date, setDate] = useState("");
   const [category, setCategory] = useState("makanan");
   const [editingId, setEditingId] = useState(null);
-const getToday = () => {
-  const today = new Date();
-  return today.toISOString().split("T")[0]; // format YYYY-MM-DD
-};
-
-const [startDate, setStartDate] = useState(getToday());
-const [endDate, setEndDate] = useState(getToday());
+  const [activePage, setActivePage] = useState("dashboard");
+  const [showForm, setShowForm] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [startDate, setStartDate] = useState(getToday());
+  const [endDate, setEndDate] = useState(getToday());
   const [filterCat, setFilterCat] = useState("semua");
-  const [adding, setAdding] = useState(false);
   const [chartMonth, setChartMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  });
+    });
 
   // ✅ Deklarasi user & handleLogout cukup sekali, di sini
   const [user, setUser] = useState(() =>
@@ -100,7 +104,6 @@ const [endDate, setEndDate] = useState(getToday());
     setDate("");
     setImage(null);
     setCategory("makanan");
-    setAdding(false);
   };
 
   const startEdit = (item) => {
@@ -110,7 +113,9 @@ const [endDate, setEndDate] = useState(getToday());
     setDate(item.date);
     setCategory(item.category);
     setImage(item.image);
-    setAdding(true);
+
+    setShowForm(true);
+    setActivePage("transaksi");
   };
 
   const deleteExpense = async (id) => {
@@ -148,70 +153,121 @@ const [endDate, setEndDate] = useState(getToday());
     .sort((a, b) => b.total - a.total);
 
   const chartExpenses = expenses.filter((e) => e.date.startsWith(chartMonth));
+  
+  const handleNavigate = (page) => {
+    if (page === "profil") {
+      setShowProfile(true);
+    } else {
+      setActivePage(page);
+    }
+  };
+
+  const handleAdd = () => {
+    setShowForm(true);
+    setActivePage("transaksi"); // pindah ke halaman transaksi saat tambah
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 px-4 sm:px-6 lg:px-8 py-8">
-      <div className="max-w-7xl mx-auto flex flex-col gap-5 lg:gap-8">
-        <Header
-          onAdd={() => setAdding(!adding)}
-          onLogout={handleLogout}
+    <div className="min-h-screen flex flex-col bg-gray-100">
+      <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col">
+        {/* Sidebar — hanya desktop */}
+        <Sidebar
+          activePage={activePage}
+          onNavigate={handleNavigate}
+          onAdd={handleAdd}
           userName={user}
-          onUpdateName={(newName) => setUser(newName)} // ✅ tambah ini
+          onLogout={handleLogout}
         />
 
-        <StatCards
-          total={total}
-          expenseCount={expenses.length}
-          filteredTotal={filteredTotal}
-          filteredCount={filteredExpenses.length}
-          avg={avgExpense}
-        />
+        {/* Header — hanya mobile */}
+        <MobileHeader userName={user} />
 
-        {adding && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-5 relative animate-fadeIn">
-              <ExpenseForm
-                name={name}
-                setName={setName}
-                amount={amount}
-                setAmount={setAmount}
-                date={date}
-                setDate={setDate}
-                category={category}
-                setCategory={setCategory}
-                image={image}
-                setImage={setImage}
-                editingId={editingId}
-                onSubmit={addExpense}
-                onCancel={() => {
-                  setAdding(false);
-                  setEditingId(null);
-                }}
+        {/* Main content — bergeser ke kanan di desktop karena sidebar */}
+        <main className="flex-1 lg:ml-60 px-4 lg:px-8 py-6 pb-24 lg:pb-8">
+          <div className="max-w-4xl mx-auto flex flex-col gap-5">
+            {/* Dashboard */}
+            {activePage === "dashboard" && (
+              <>
+                <StatCards
+                  total={total}
+                  expenseCount={expenses.length}
+                  filteredTotal={filteredTotal}
+                  filteredCount={filteredExpenses.length}
+                  avg={avgExpense}
+                />
+                <CategoryBreakdown
+                  breakdown={categoryBreakdown}
+                  total={total}
+                />
+              </>
+            )}
+
+            {/* Grafik */}
+            {activePage === "grafik" && (
+              <Charts
+                expenses={chartExpenses}
+                month={chartMonth}
+                onMonthChange={setChartMonth}
               />
-            </div>
+            )}
+
+            {/* Transaksi */}
+            {activePage === "transaksi" && (
+              <>
+                {showForm && (
+                  <ExpenseForm
+                    name={name}
+                    setName={setName}
+                    amount={amount}
+                    setAmount={setAmount}
+                    date={date}
+                    setDate={setDate}
+                    category={category}
+                    setCategory={setCategory}
+                    image={image}
+                    setImage={setImage}
+                    editingId={editingId}
+                    onSubmit={addExpense}
+                    onCancel={() => {
+                      setShowForm(false);
+                      setEditingId(null);
+                    }}
+                  />
+                )}
+                <ExpenseTable
+                  filteredExpenses={filteredExpenses}
+                  filteredTotal={filteredTotal}
+                  startDate={startDate}
+                  setStartDate={setStartDate}
+                  endDate={endDate}
+                  setEndDate={setEndDate}
+                  filterCat={filterCat}
+                  setFilterCat={setFilterCat}
+                  onEdit={startEdit}
+                  onDelete={deleteExpense}
+                />
+              </>
+            )}
           </div>
+        </main>
+
+        {/* Bottom Nav — hanya mobile */}
+        <BottomNav
+          activePage={activePage}
+          onNavigate={handleNavigate}
+          onAdd={handleAdd}
+        />
+
+        {/* Profile Modal */}
+        {showProfile && (
+          <ProfileModal
+            onClose={() => setShowProfile(false)}
+            onUpdateName={(name) => {
+              setUser(name);
+              setShowProfile(false);
+            }}
+          />
         )}
-
-        <ExpenseTable
-          filteredExpenses={filteredExpenses}
-          filteredTotal={filteredTotal}
-          startDate={startDate}
-          setStartDate={setStartDate}
-          endDate={endDate}
-          setEndDate={setEndDate}
-          filterCat={filterCat}
-          setFilterCat={setFilterCat}
-          onEdit={startEdit}
-          onDelete={deleteExpense}
-        />
-
-        <CategoryBreakdown breakdown={categoryBreakdown} total={total} />
-
-        <Charts
-          expenses={chartExpenses}
-          month={chartMonth}
-          onMonthChange={setChartMonth}
-        />
       </div>
       <Footer />
     </div>
