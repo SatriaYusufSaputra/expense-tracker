@@ -104,6 +104,8 @@ export default function App() {
     setDate("");
     setImage(null);
     setCategory("makanan");
+
+    setShowForm(false);
   };
 
   const startEdit = (item) => {
