@@ -7,6 +7,7 @@ import CategoryBreakdown from "./components/CategoryBreakdown";
 import ExpenseTable from "./components/ExpenseTable";
 import ExpenseForm from "./components/ExpenseForm";
 import Charts from "./components/Charts";
+import Footer from "./components/Footer";
 import {
   fetchExpenses,
   insertExpense,
@@ -212,6 +213,7 @@ const [endDate, setEndDate] = useState(getToday());
           onMonthChange={setChartMonth}
         />
       </div>
+      <Footer />
     </div>
   );
 }

@@ -25,7 +25,7 @@ export default function Charts({ expenses}) {
 
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col gap-6">
-      <ResponsiveContainer width="100%" height={220}>
+      <ResponsiveContainer width="100%" height={300}>
         <BarChart data={barData}>
           <XAxis dataKey="date" tick={{ fontSize: 11 }} />
           <YAxis
@@ -36,7 +36,7 @@ export default function Charts({ expenses}) {
           <Bar dataKey="total" fill="#166534" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
-      <ResponsiveContainer width="100%" height={220}>
+      <ResponsiveContainer width="100%" height={350}>
         <PieChart>
           <Pie
             data={categoryData}
