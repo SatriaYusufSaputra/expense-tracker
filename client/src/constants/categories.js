@@ -49,6 +49,13 @@ export const CATEGORIES = [
     text: "text-cyan-700",
   },
   {
+    id: "olahraga",
+    label: "Olahraga",
+    emoji: "⚽",
+    bg: "bg-green-100",
+    text: "text-green-700",
+  },
+  {
     id: "lainnya",
     label: "Lainnya",
     emoji: "📦",
