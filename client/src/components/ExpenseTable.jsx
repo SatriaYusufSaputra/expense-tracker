@@ -27,13 +27,14 @@ export default function ExpenseTable({
         <ExportButton expenses={filteredExpenses} />{" "}
         {/* export data yang sudah difilter */}
         <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-400 font-medium">Dari</span>
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             className="text-xs px-2.5 py-1.5 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:border-green-600 text-gray-600"
           />
-          <span className="text-gray-300 text-sm">—</span>
+          <span className="text-xs text-gray-400 font-medium">Sampai</span>
           <input
             type="date"
             value={endDate}
