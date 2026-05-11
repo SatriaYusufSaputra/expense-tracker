@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import { CATEGORIES } from "./constants/categories";
 import Sidebar from "./components/Sidebar";
 import BottomNav from "./components/BottomNav";
-import MobileHeader from "./components/MobileHeade";
+import MobileHeader from "./components/MobileHeader";
 import AuthForm from "./components/AuthForm"; // ✅ cukup sekali
 import StatCards from "./components/StatCards";
 import CategoryBreakdown from "./components/CategoryBreakdown";
 import ExpenseTable from "./components/ExpenseTable";
 import ExpenseForm from "./components/ExpenseForm";
 import Charts from "./components/Charts";
-import ProfileModal from "./components/ProfileModal";
 import Footer from "./components/Footer";
+import ProfilePage from "./components/ProfilePage";
 import {
   fetchExpenses,
   insertExpense,
@@ -23,10 +23,6 @@ const mapExpense = (expense) => ({
   id: expense._id || expense.id,
 });
 
-const getToday = () => {
-  return new Date().toISOString().split("T")[0];
-};
-
 export default function App() {
   const [expenses, setExpenses] = useState([]);
   const [name, setName] = useState("");
@@ -37,9 +33,9 @@ export default function App() {
   const [editingId, setEditingId] = useState(null);
   const [activePage, setActivePage] = useState("dashboard");
   const [showForm, setShowForm] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
-  const [startDate, setStartDate] = useState(getToday());
-  const [endDate, setEndDate] = useState(getToday());
+
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [filterCat, setFilterCat] = useState("semua");
   const [chartMonth, setChartMonth] = useState(() => {
     const now = new Date();
@@ -157,11 +153,7 @@ export default function App() {
   const chartExpenses = expenses.filter((e) => e.date.startsWith(chartMonth));
 
   const handleNavigate = (page) => {
-    if (page === "profil") {
-      setShowProfile(true);
-    } else {
-      setActivePage(page);
-    }
+    setActivePage(page);
   };
 
   const handleAdd = () => {
@@ -254,6 +246,15 @@ export default function App() {
                 />
               </>
             )}
+
+            {/* Profile Modal */}
+            {activePage === "profil" && (
+              <ProfilePage
+                userName={user}
+                onLogout={handleLogout}
+                onUpdateName={(newName) => setUser(newName)}
+              />
+            )}
           </div>
         </main>
 
@@ -263,17 +264,6 @@ export default function App() {
           onNavigate={handleNavigate}
           onAdd={handleAdd}
         />
-
-        {/* Profile Modal */}
-        {showProfile && (
-          <ProfileModal
-            onClose={() => setShowProfile(false)}
-            onUpdateName={(name) => {
-              setUser(name);
-              setShowProfile(false);
-            }}
-          />
-        )}
       </div>
       <Footer />
     </div>
