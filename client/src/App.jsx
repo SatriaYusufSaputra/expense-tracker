@@ -44,7 +44,7 @@ export default function App() {
   const [chartMonth, setChartMonth] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    });
+  });
 
   // ✅ Deklarasi user & handleLogout cukup sekali, di sini
   const [user, setUser] = useState(() =>
@@ -153,7 +153,7 @@ export default function App() {
     .sort((a, b) => b.total - a.total);
 
   const chartExpenses = expenses.filter((e) => e.date.startsWith(chartMonth));
-  
+
   const handleNavigate = (page) => {
     if (page === "profil") {
       setShowProfile(true);
@@ -215,24 +215,28 @@ export default function App() {
             {activePage === "transaksi" && (
               <>
                 {showForm && (
-                  <ExpenseForm
-                    name={name}
-                    setName={setName}
-                    amount={amount}
-                    setAmount={setAmount}
-                    date={date}
-                    setDate={setDate}
-                    category={category}
-                    setCategory={setCategory}
-                    image={image}
-                    setImage={setImage}
-                    editingId={editingId}
-                    onSubmit={addExpense}
-                    onCancel={() => {
-                      setShowForm(false);
-                      setEditingId(null);
-                    }}
-                  />
+                  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-5 max-h-[90vh] overflow-y-auto animate-fadeIn">
+                      <ExpenseForm
+                        name={name}
+                        setName={setName}
+                        amount={amount}
+                        setAmount={setAmount}
+                        date={date}
+                        setDate={setDate}
+                        category={category}
+                        setCategory={setCategory}
+                        image={image}
+                        setImage={setImage}
+                        editingId={editingId}
+                        onSubmit={addExpense}
+                        onCancel={() => {
+                          setShowForm(false);
+                          setEditingId(null);
+                        }}
+                      />
+                    </div>
+                  </div>
                 )}
                 <ExpenseTable
                   filteredExpenses={filteredExpenses}
