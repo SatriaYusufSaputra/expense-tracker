@@ -2,8 +2,6 @@ import { formatRupiah } from "../utils/format";
 export default function StatCards({
   total,
   expenseCount,
-  filteredTotal,
-  filteredCount,
   avg,
 }) {
   return (
@@ -19,17 +17,7 @@ export default function StatCards({
           {expenseCount} transaksi
         </p>
       </div>
-      <div className="bg-white border border-gray-100 rounded-2xl p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">
-          Filter
-        </p>
-        <p className="text-base sm:text-lg font-bold text-gray-800 leading-tight">
-          {formatRupiah(filteredTotal)}
-        </p>
-        <p className="text-xs text-gray-400 mt-0.5">
-          {filteredCount} transaksi
-        </p>
-      </div>
+
       <div className="bg-white border border-gray-100 rounded-2xl p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">
           Rata-rata

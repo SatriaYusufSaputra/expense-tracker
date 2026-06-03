@@ -16,7 +16,20 @@ export default function ExpenseTable({
   onEdit,
   onDelete,
 }) {
+  
   const [preview, setPreview] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
+  const safePage = Math.min(currentPage, totalPages) || 1;
+
+  const paginatedExpenses = filteredExpenses.slice(
+    (safePage - 1) * itemsPerPage,
+    safePage * itemsPerPage,
+  );
+
+
   return (
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden">
       {/* Table Header: filter tanggal */}
@@ -119,7 +132,7 @@ export default function ExpenseTable({
                 </tr>
               </thead>
               <tbody>
-                {filteredExpenses.map((item) => {
+                {paginatedExpenses.map((item) => {
                   const cat = getCat(item.category);
                   return (
                     <tr
@@ -177,6 +190,93 @@ export default function ExpenseTable({
                 })}
               </tbody>
             </table>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-5 py-3 border-t border-gray-50">
+                <span className="text-xs text-gray-400">
+                  Halaman {safePage} dari {totalPages}
+                </span>
+                <div className="flex items-center gap-1">
+                  {/* Tombol First */}
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    disabled={safePage === 1}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg text-xs text-gray-400 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                  >
+                    «
+                  </button>
+
+                  {/* Tombol Prev */}
+                  <button
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                    disabled={safePage === 1}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg text-xs text-gray-400 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                  >
+                    ‹
+                  </button>
+
+                  {/* Nomor halaman */}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      // Tampilkan halaman sekitar currentPage saja
+                      return (
+                        page === 1 ||
+                        page === totalPages ||
+                        Math.abs(page - safePage) <= 1
+                      );
+                    })
+                    .reduce((acc, page, i, arr) => {
+                      // Tambah "..." kalau ada gap
+                      if (i > 0 && page - arr[i - 1] > 1) {
+                        acc.push("...");
+                      }
+                      acc.push(page);
+                      return acc;
+                    }, [])
+                    .map((page, i) =>
+                      page === "..." ? (
+                        <span
+                          key={`dots-${i}`}
+                          className="w-7 h-7 flex items-center justify-center text-xs text-gray-400"
+                        >
+                          ...
+                        </span>
+                      ) : (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-semibold transition
+                ${
+                  safePage === page
+                    ? "bg-green-800 text-white"
+                    : "text-gray-500 hover:bg-gray-100"
+                }`}
+                        >
+                          {page}
+                        </button>
+                      ),
+                    )}
+
+                  {/* Tombol Next */}
+                  <button
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                    disabled={safePage === totalPages}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg text-xs text-gray-400 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                  >
+                    ›
+                  </button>
+
+                  {/* Tombol Last */}
+                  <button
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={safePage === totalPages}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg text-xs text-gray-400 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                  >
+                    »
+                  </button>
+                </div>
+              </div>
+            )}
             {preview && (
               <div
                 className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
