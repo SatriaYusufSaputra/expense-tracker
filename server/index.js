@@ -6,6 +6,8 @@ import expenseRoutes from "./routes/expenses.js";
 import authRoutes from "./routes/auth.js";
 import { protect } from "./middleware/auth.js";
 import uploadRoute from "./routes/upload.js";
+import walletRoute from "./routes/wallet.js";
+import payLaterRoute from "./routes/payLater.js";
 
 dotenv.config();
 
@@ -24,6 +26,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/expenses", protect, expenseRoutes);
 app.use("/api/upload", uploadRoute);
+app.use("/api/wallets", walletRoute);
+app.use("/api/paylater", payLaterRoute);
 
 connectDB().then(() => {
   app.listen(process.env.PORT, () => {
