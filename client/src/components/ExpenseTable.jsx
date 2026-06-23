@@ -19,7 +19,7 @@ export default function ExpenseTable({
   
   const [preview, setPreview] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10; // jumlah item per halaman 
 
   const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
   const safePage = Math.min(currentPage, totalPages) || 1;

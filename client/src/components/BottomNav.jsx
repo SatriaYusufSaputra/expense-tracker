@@ -37,6 +37,23 @@ const NAV_ITEMS = [
     ),
   },
   {
+    id: "wallet",
+    label: "Wallet",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        viewBox="0 0 24 24"
+      >
+        <path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5" />
+        <path d="M16 12h5v4h-5z" />
+      </svg>
+    ),
+  },
+  {
     id: "tambah",
     label: "Tambah",
     icon: (
@@ -68,6 +85,23 @@ const NAV_ITEMS = [
       >
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <polyline points="14 2 14 8 20 8" />
+      </svg>
+    ),
+  },
+  {
+    id: "paylater",
+    label: "Pay Later",
+    icon: (
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        viewBox="0 0 24 24"
+      >
+        <rect x="1" y="4" width="22" height="16" rx="2" />
+        <line x1="1" y1="10" x2="23" y2="10" />
       </svg>
     ),
   },

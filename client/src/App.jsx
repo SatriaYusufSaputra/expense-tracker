@@ -3,14 +3,17 @@ import { CATEGORIES } from "./constants/categories";
 import Sidebar from "./components/Sidebar";
 import BottomNav from "./components/BottomNav";
 import MobileHeader from "./components/MobileHeader";
-import AuthForm from "./components/AuthForm"; // ✅ cukup sekali
-import StatCards from "./components/StatCards";
-import CategoryBreakdown from "./components/CategoryBreakdown";
+import AuthForm from "./components/AuthForm";
 import ExpenseTable from "./components/ExpenseTable";
 import ExpenseForm from "./components/ExpenseForm";
 import Charts from "./components/Charts";
 import Footer from "./components/Footer";
 import ProfilePage from "./components/ProfilePage";
+import WalletPage from "./components/WalletPage";
+import PayLaterPage from "./components/PayLaterPage";
+import Dashboard from "./components/Dashboard";
+import { fetchWallets } from "./utils/walletService";
+import { fetchPayLaters } from "./utils/payLaterService";
 import {
   fetchExpenses,
   insertExpense,
@@ -33,7 +36,12 @@ export default function App() {
   const [editingId, setEditingId] = useState(null);
   const [activePage, setActivePage] = useState("dashboard");
   const [showForm, setShowForm] = useState(false);
-
+  const [wallets, setWallets] = useState([]);
+  const [payLaters, setPayLaters] = useState([]);
+  const [type, setType] = useState("expense");
+  const [walletId, setWalletId] = useState("");
+  const [toWalletId, setToWalletId] = useState("");
+  const [formError, setFormError] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [filterCat, setFilterCat] = useState("semua");
@@ -42,7 +50,6 @@ export default function App() {
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   });
 
-  // ✅ Deklarasi user & handleLogout cukup sekali, di sini
   const [user, setUser] = useState(() =>
     localStorage.getItem("token")
       ? localStorage.getItem("userName") || "user"
@@ -58,60 +65,108 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return;
-    const loadExpenses = async () => {
+    const loadAll = async () => {
       try {
-        const data = await fetchExpenses();
-        setExpenses(data.map(mapExpense));
+        const [expensesData, walletsData, payLatersData] = await Promise.all([
+          fetchExpenses(),
+          fetchWallets(),
+          fetchPayLaters(),
+        ]);
+        setExpenses(expensesData.map(mapExpense));
+        setWallets(walletsData);
+        setPayLaters(payLatersData);
       } catch (err) {
         console.error(err);
         handleLogout();
       }
     };
-    loadExpenses();
+    loadAll();
   }, [user]);
 
   if (!user) return <AuthForm onLogin={(name) => setUser(name)} />;
 
-  const addExpense = async () => {
-    if (!name || !amount || !date) return;
-    const expensePayload = {
-      name,
-      amount: Number(amount),
-      date,
-      category,
-      image,
-    };
-
-    if (editingId) {
-      const updated = await updateExpense(editingId, expensePayload);
-      setExpenses((prev) =>
-        prev.map((item) =>
-          item.id === editingId ? mapExpense(updated) : item,
-        ),
-      );
-      setEditingId(null);
-    } else {
-      const created = await insertExpense(expensePayload);
-      setExpenses((prev) => [mapExpense(created), ...prev]);
-    }
-
+  // ✅ handleCancel didefinisikan SEBELUM dipakai
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setFormError("");
     setName("");
     setAmount("");
     setDate("");
     setImage(null);
     setCategory("makanan");
+    setType("expense");
+    setWalletId("");
+    setToWalletId("");
+  };
 
-    setShowForm(false);
+  const addExpense = async () => {
+    if (!name || !amount || !date) return;
+    if (type === "transfer" && !toWalletId) return;
+    setFormError("");
+
+    const expensePayload = {
+      type,
+      name,
+      amount: Number(amount),
+      date,
+      category: type === "expense" ? category : null,
+      walletId: walletId || null,
+      toWalletId: type === "transfer" ? toWalletId : null,
+      image: type === "expense" ? image : null,
+    };
+
+    try {
+      if (editingId) {
+        const updated = await updateExpense(editingId, expensePayload);
+        if (updated.message) {
+          setFormError(updated.message);
+          return;
+        }
+        setExpenses((prev) =>
+          prev.map((item) =>
+            item.id === editingId ? mapExpense(updated) : item,
+          ),
+        );
+        setEditingId(null);
+      } else {
+        const created = await insertExpense(expensePayload);
+        if (created.message) {
+          setFormError(created.message);
+          return;
+        }
+        setExpenses((prev) => [mapExpense(created), ...prev]);
+      }
+
+      // Refresh wallets supaya saldo terupdate
+      const updatedWallets = await fetchWallets();
+      setWallets(updatedWallets);
+
+      // Reset form
+      setName("");
+      setAmount("");
+      setDate("");
+      setImage(null);
+      setCategory("makanan");
+      setType("expense");
+      setWalletId("");
+      setToWalletId("");
+      setShowForm(false);
+    } catch {
+      setFormError("Gagal menyimpan transaksi");
+    }
   };
 
   const startEdit = (item) => {
     setEditingId(item.id);
     setName(item.name);
-    setAmount(item.amount);
+    setAmount(String(item.amount));
     setDate(item.date);
-    setCategory(item.category);
+    setCategory(item.category || "makanan");
     setImage(item.image);
-
+    setType(item.type || "expense");
+    setWalletId(item.walletId || "");
+    setToWalletId(item.toWalletId || "");
     setShowForm(true);
     setActivePage("transaksi");
   };
@@ -119,9 +174,10 @@ export default function App() {
   const deleteExpense = async (id) => {
     await deleteExpenseById(id);
     setExpenses((prev) => prev.filter((item) => item.id !== id));
+    // Refresh wallets supaya saldo terupdate
+    const updatedWallets = await fetchWallets();
+    setWallets(updatedWallets);
   };
-
-  const total = expenses.reduce((acc, item) => acc + Number(item.amount), 0);
 
   const filteredExpenses = expenses.filter((item) => {
     const inRange =
@@ -136,35 +192,29 @@ export default function App() {
     (acc, item) => acc + Number(item.amount),
     0,
   );
-  const avgExpense = filteredExpenses.length
-    ? filteredTotal / filteredExpenses.length
-    : 0;
-
-  const categoryBreakdown = CATEGORIES.map((cat) => ({
-    ...cat,
-    total: expenses
-      .filter((e) => e.category === cat.id)
-      .reduce((acc, e) => acc + Number(e.amount), 0),
-    count: expenses.filter((e) => e.category === cat.id).length,
-  }))
-    .filter((c) => c.count > 0)
-    .sort((a, b) => b.total - a.total);
 
   const chartExpenses = expenses.filter((e) => e.date.startsWith(chartMonth));
 
-  const handleNavigate = (page) => {
-    setActivePage(page);
-  };
+  const handleNavigate = (page) => setActivePage(page);
 
   const handleAdd = () => {
+    // Reset form sebelum buka
+    setEditingId(null);
+    setName("");
+    setAmount("");
+    setDate("");
+    setImage(null);
+    setCategory("makanan");
+    setType("expense");
+    setWalletId("");
+    setToWalletId("");
+    setFormError("");
     setShowForm(true);
-    setActivePage("transaksi"); // pindah ke halaman transaksi saat tambah
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-100">
       <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col">
-        {/* Sidebar — hanya desktop */}
         <Sidebar
           activePage={activePage}
           onNavigate={handleNavigate}
@@ -173,30 +223,19 @@ export default function App() {
           onLogout={handleLogout}
         />
 
-        {/* Header — hanya mobile */}
         <MobileHeader userName={user} />
 
-        {/* Main content — bergeser ke kanan di desktop karena sidebar */}
         <main className="flex-1 lg:ml-60 px-4 lg:px-8 py-6 pb-24 lg:pb-8">
           <div className="max-w-4xl mx-auto flex flex-col gap-5">
-            {/* Dashboard */}
             {activePage === "dashboard" && (
-              <>
-                <StatCards
-                  total={total}
-                  expenseCount={expenses.length}
-                  filteredTotal={filteredTotal}
-                  filteredCount={filteredExpenses.length}
-                  avg={avgExpense}
-                />
-                <CategoryBreakdown
-                  breakdown={categoryBreakdown}
-                  total={total}
-                />
-              </>
+              <Dashboard
+                expenses={expenses}
+                wallets={wallets}
+                payLaters={payLaters}
+                onNavigate={handleNavigate}
+              />
             )}
 
-            {/* Grafik */}
             {activePage === "grafik" && (
               <Charts
                 expenses={chartExpenses}
@@ -205,49 +244,29 @@ export default function App() {
               />
             )}
 
-            {/* Transaksi */}
             {activePage === "transaksi" && (
-              <>
-                {showForm && (
-                  <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-5 max-h-[90vh] overflow-y-auto animate-fadeIn">
-                      <ExpenseForm
-                        name={name}
-                        setName={setName}
-                        amount={amount}
-                        setAmount={setAmount}
-                        date={date}
-                        setDate={setDate}
-                        category={category}
-                        setCategory={setCategory}
-                        image={image}
-                        setImage={setImage}
-                        editingId={editingId}
-                        onSubmit={addExpense}
-                        onCancel={() => {
-                          setShowForm(false);
-                          setEditingId(null);
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-                <ExpenseTable
-                  filteredExpenses={filteredExpenses}
-                  filteredTotal={filteredTotal}
-                  startDate={startDate}
-                  setStartDate={setStartDate}
-                  endDate={endDate}
-                  setEndDate={setEndDate}
-                  filterCat={filterCat}
-                  setFilterCat={setFilterCat}
-                  onEdit={startEdit}
-                  onDelete={deleteExpense}
-                />
-              </>
+              <ExpenseTable
+                filteredExpenses={filteredExpenses}
+                filteredTotal={filteredTotal}
+                startDate={startDate}
+                setStartDate={setStartDate}
+                endDate={endDate}
+                setEndDate={setEndDate}
+                filterCat={filterCat}
+                setFilterCat={setFilterCat}
+                onEdit={startEdit}
+                onDelete={deleteExpense}
+              />
             )}
 
-            {/* Profile Modal */}
+            {activePage === "wallet" && (
+              <WalletPage wallets={wallets} setWallets={setWallets} />
+            )}
+
+            {activePage === "paylater" && (
+              <PayLaterPage payLaters={payLaters} setPayLaters={setPayLaters} />
+            )}
+
             {activePage === "profil" && (
               <ProfilePage
                 userName={user}
@@ -258,14 +277,41 @@ export default function App() {
           </div>
         </main>
 
-        {/* Bottom Nav — hanya mobile */}
         <BottomNav
           activePage={activePage}
           onNavigate={handleNavigate}
           onAdd={handleAdd}
         />
       </div>
+
       <Footer />
+
+      {/* ✅ ExpenseForm sebagai bottom sheet — di luar main, di level paling atas */}
+      {showForm && (
+        <ExpenseForm
+          name={name}
+          setName={setName}
+          amount={amount}
+          setAmount={setAmount}
+          date={date}
+          setDate={setDate}
+          category={category}
+          setCategory={setCategory}
+          image={image}
+          setImage={setImage}
+          type={type}
+          setType={setType}
+          walletId={walletId}
+          setWalletId={setWalletId}
+          toWalletId={toWalletId}
+          setToWalletId={setToWalletId}
+          wallets={wallets}
+          editingId={editingId}
+          onSubmit={addExpense}
+          onCancel={handleCancel}
+          errorMsg={formError}
+        />
+      )}
     </div>
   );
 }
