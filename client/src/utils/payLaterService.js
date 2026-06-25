@@ -48,10 +48,12 @@ export async function createPayLaterItem(payLaterId, data) {
   return res.json();
 }
 
-export async function markAsPaid(itemId) {
+// Update fungsi markAsPaid — kirim walletId
+export async function markAsPaid(itemId, walletId) {
   const res = await fetch(`${BASE_URL}/items/${itemId}/paid`, {
     method: "PUT",
     headers: getHeaders(),
+    body: JSON.stringify({ walletId }), // ✅ kirim walletId
   });
   return res.json();
 }

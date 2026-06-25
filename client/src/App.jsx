@@ -264,7 +264,15 @@ export default function App() {
             )}
 
             {activePage === "paylater" && (
-              <PayLaterPage payLaters={payLaters} setPayLaters={setPayLaters} />
+              <PayLaterPage
+                payLaters={payLaters}
+                setPayLaters={setPayLaters}
+                wallets={wallets}
+                onWalletsUpdate={async () => {
+                  const updated = await fetchWallets();
+                  setWallets(updated);
+                }}
+              />
             )}
 
             {activePage === "profil" && (

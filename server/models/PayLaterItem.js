@@ -17,6 +17,11 @@ const payLaterItemSchema = new mongoose.Schema(
     dueDate: { type: String, required: true },
     isPaid: { type: Boolean, default: false },
     paidAt: { type: Date, default: null },
+    walletId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Wallet",
+      default: null,
+    }, // ✅ tambah ini
   },
   { timestamps: true },
 );
