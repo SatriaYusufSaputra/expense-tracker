@@ -1,35 +1,47 @@
+import { useState } from "react";
 import { formatRupiah } from "../utils/format";
 import { CATEGORIES } from "../constants/categories";
 
 function getDaysLeft(dueDate) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
   const due = new Date(dueDate);
   return Math.ceil((due - today) / (1000 * 60 * 60 * 24));
 }
 
 export default function Dashboard({
-  expenses,
-  wallets,
-  payLaters,
+  expenses = [],
+  wallets = [],
+  payLaters = [],
   onNavigate,
 }) {
+  const [showBalance, setShowBalance] = useState(false);
+
   const now = new Date();
-  const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+    2,
+    "0",
+  )}`;
 
   // Hitung pemasukan & pengeluaran bulan ini
   const thisMonthExpenses = expenses.filter((e) =>
-    e.date.startsWith(thisMonth),
+    e.date?.startsWith(thisMonth),
   );
+
   const totalIncome = thisMonthExpenses
     .filter((e) => e.type === "income")
-    .reduce((acc, e) => acc + Number(e.amount), 0);
+    .reduce((acc, e) => acc + Number(e.amount || 0), 0);
+
   const totalExpense = thisMonthExpenses
     .filter((e) => e.type === "expense" || !e.type)
-    .reduce((acc, e) => acc + Number(e.amount), 0);
+    .reduce((acc, e) => acc + Number(e.amount || 0), 0);
 
   // Total saldo semua wallet
-  const totalSaldo = wallets.reduce((acc, w) => acc + w.balance, 0);
+  const totalSaldo = wallets.reduce(
+    (acc, w) => acc + Number(w.balance || 0),
+    0,
+  );
 
   // Alert paylater — tagihan yang <= 7 hari lagi atau overdue
   const urgentItems = payLaters
@@ -53,11 +65,50 @@ export default function Dashboard({
     <div className="flex flex-col gap-5">
       {/* ── Total Saldo ── */}
       <div className="bg-green-800 rounded-2xl p-6">
-        <p className="text-xs font-semibold uppercase tracking-wide text-green-300 mb-1">
-          Total Saldo
-        </p>
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-xs font-semibold uppercase tracking-wide text-green-300">
+            Total Saldo
+          </p>
+
+          <button
+            onClick={() => setShowBalance(!showBalance)}
+            className="text-green-300 hover:text-white transition"
+          >
+            {showBalance ? (
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                viewBox="0 0 24 24"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            ) : (
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                viewBox="0 0 24 24"
+              >
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+            )}
+          </button>
+        </div>
+
         <p className="text-3xl font-bold text-white">
-          {formatRupiah(totalSaldo)}
+          {showBalance ? formatRupiah(totalSaldo) : "Rp ••••••••"}
+        </p>
+
+        <p className="text-xs text-green-400 mt-1">
+          {wallets.length} wallet aktif
         </p>
 
         {/* Mini wallet list */}
@@ -69,14 +120,17 @@ export default function Dashboard({
                 className="shrink-0 bg-white/10 rounded-xl px-3 py-2 flex items-center gap-2"
               >
                 <span className="text-sm">{w.icon}</span>
+
                 <div>
                   <p className="text-xs text-green-200 font-medium">{w.name}</p>
+
                   <p className="text-xs font-bold text-white">
-                    {formatRupiah(w.balance)}
+                    {showBalance ? formatRupiah(w.balance || 0) : "••••••"}
                   </p>
                 </div>
               </div>
             ))}
+
             <button
               onClick={() => onNavigate("wallet")}
               className="shrink-0 bg-white/10 hover:bg-white/20 rounded-xl px-3 py-2 text-xs text-green-200 font-semibold transition"
@@ -113,11 +167,14 @@ export default function Dashboard({
                 <polyline points="5 12 12 5 19 12" />
               </svg>
             </div>
+
             <p className="text-xs font-semibold text-gray-400">Pemasukan</p>
           </div>
+
           <p className="text-lg font-bold text-green-700">
             {formatRupiah(totalIncome)}
           </p>
+
           <p className="text-xs text-gray-400 mt-0.5">bulan ini</p>
         </div>
 
@@ -136,11 +193,14 @@ export default function Dashboard({
                 <polyline points="19 12 12 19 5 12" />
               </svg>
             </div>
+
             <p className="text-xs font-semibold text-gray-400">Pengeluaran</p>
           </div>
+
           <p className="text-lg font-bold text-red-500">
             {formatRupiah(totalExpense)}
           </p>
+
           <p className="text-xs text-gray-400 mt-0.5">bulan ini</p>
         </div>
       </div>
@@ -162,10 +222,12 @@ export default function Dashboard({
                 <line x1="12" y1="9" x2="12" y2="13" />
                 <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
+
               <p className="text-xs font-bold text-red-600">
                 Tagihan Mendekati Jatuh Tempo
               </p>
             </div>
+
             <button
               onClick={() => onNavigate("paylater")}
               className="text-xs font-semibold text-red-500 hover:text-red-700"
@@ -173,9 +235,11 @@ export default function Dashboard({
               Lihat Semua →
             </button>
           </div>
+
           <div className="flex flex-col">
             {urgentItems.slice(0, 3).map((item, i) => {
               const days = getDaysLeft(item.dueDate);
+
               return (
                 <div
                   key={i}
@@ -183,21 +247,31 @@ export default function Dashboard({
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-sm">{item.payLaterIcon}</span>
+
                     <div>
                       <p className="text-sm font-medium text-gray-700">
                         {item.name}
                       </p>
+
                       <p className="text-xs text-gray-400">
                         {item.payLaterName}
                       </p>
                     </div>
                   </div>
+
                   <div className="text-right">
                     <p className="text-sm font-bold text-red-500">
                       {formatRupiah(item.amount)}
                     </p>
+
                     <p
-                      className={`text-xs font-semibold ${days < 0 ? "text-red-600" : days <= 3 ? "text-red-500" : "text-amber-500"}`}
+                      className={`text-xs font-semibold ${
+                        days < 0
+                          ? "text-red-600"
+                          : days <= 3
+                            ? "text-red-500"
+                            : "text-amber-500"
+                      }`}
                     >
                       {days < 0
                         ? `Terlambat ${Math.abs(days)} hari`
@@ -219,6 +293,7 @@ export default function Dashboard({
           <h2 className="text-sm font-semibold text-gray-700">
             Transaksi Terakhir
           </h2>
+
           <button
             onClick={() => onNavigate("transaksi")}
             className="text-xs font-semibold text-green-700 hover:text-green-900"
@@ -238,6 +313,7 @@ export default function Dashboard({
               const wallet = wallets.find((w) => w._id === item.walletId);
               const isIncome = item.type === "income";
               const isTransfer = item.type === "transfer";
+
               return (
                 <div
                   key={item.id}
@@ -245,15 +321,22 @@ export default function Dashboard({
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm
-                      ${isIncome ? "bg-green-50" : isTransfer ? "bg-blue-50" : "bg-gray-50"}`}
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm ${
+                        isIncome
+                          ? "bg-green-50"
+                          : isTransfer
+                            ? "bg-blue-50"
+                            : "bg-gray-50"
+                      }`}
                     >
                       {isTransfer ? "↔️" : cat ? cat.emoji : "📦"}
                     </div>
+
                     <div>
                       <p className="text-sm font-medium text-gray-700">
                         {item.name}
                       </p>
+
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <p className="text-xs text-gray-400">
                           {new Date(item.date).toLocaleDateString("id-ID", {
@@ -261,6 +344,7 @@ export default function Dashboard({
                             month: "short",
                           })}
                         </p>
+
                         {wallet && (
                           <>
                             <span className="text-gray-200">·</span>
@@ -272,8 +356,15 @@ export default function Dashboard({
                       </div>
                     </div>
                   </div>
+
                   <p
-                    className={`text-sm font-bold ${isIncome ? "text-green-600" : isTransfer ? "text-blue-500" : "text-red-500"}`}
+                    className={`text-sm font-bold ${
+                      isIncome
+                        ? "text-green-600"
+                        : isTransfer
+                          ? "text-blue-500"
+                          : "text-red-500"
+                    }`}
                   >
                     {isIncome ? "+" : isTransfer ? "" : "-"}
                     {formatRupiah(item.amount)}
@@ -292,6 +383,7 @@ export default function Dashboard({
             <h2 className="text-sm font-semibold text-gray-700">
               Pengeluaran per Kategori
             </h2>
+
             <button
               onClick={() => onNavigate("grafik")}
               className="text-xs font-semibold text-green-700 hover:text-green-900"
@@ -299,6 +391,7 @@ export default function Dashboard({
               Grafik →
             </button>
           </div>
+
           <div className="p-5 flex flex-col gap-3">
             {CATEGORIES.map((cat) => {
               const total = thisMonthExpenses
@@ -306,26 +399,33 @@ export default function Dashboard({
                   (e) =>
                     e.category === cat.id && (e.type === "expense" || !e.type),
                 )
-                .reduce((acc, e) => acc + Number(e.amount), 0);
+                .reduce((acc, e) => acc + Number(e.amount || 0), 0);
+
               if (total === 0) return null;
+
               const pct =
                 totalExpense > 0 ? Math.round((total / totalExpense) * 100) : 0;
+
               return (
                 <div key={cat.id}>
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm">{cat.emoji}</span>
+
                       <span className="text-xs font-medium text-gray-600">
                         {cat.label}
                       </span>
                     </div>
+
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-400">{pct}%</span>
+
                       <span className="text-xs font-semibold text-gray-700">
                         {formatRupiah(total)}
                       </span>
                     </div>
                   </div>
+
                   <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-green-700 rounded-full transition-all duration-500"
